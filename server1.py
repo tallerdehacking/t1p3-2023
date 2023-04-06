@@ -12,9 +12,6 @@ sk = serialization.load_pem_private_key(os.getenv("PRIVATE_KEY", "").encode(),pa
 d = sk.private_numbers().d
 n = sk.private_numbers().public_numbers.n
 
-print("d is", d)
-print("n is", n)
-
 def handle(c):
     c.sendall(
         b"Preguntame lo que quieras en hexadecimal (menos \"" + \
@@ -23,11 +20,11 @@ def handle(c):
     )
     try:
         received = c.recv(1024).decode().strip()
+        message_to_int = int.from_bytes(bytes.fromhex(received), byteorder='little')
+        print("message to int is", message_to_int)
         if received.strip() == FORBIDDEN_QUESTION.encode().hex():
             c.sendall(random.choice(FORBIDDEN_ANSWERS).encode() + b"\n\n")
         else:
-            message_to_int = int.from_bytes(bytes.fromhex(received), byteorder='big')
-            print("message to int is", message_to_int)
             answer = {
                 "message": received,
                 "signature": pow(message_to_int, d, n)

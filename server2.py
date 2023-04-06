@@ -11,19 +11,13 @@ pk = serialization.load_pem_public_key(os.getenv("PUBLIC_KEY", "").encode())
 e = pk.public_numbers().e
 n = pk.public_numbers().n
 
-print("e is", e)
-print("n is", n)
-
 def handle(c):
     c.sendall(b"Adjunta un mensaje de 5326 tal cual como lo recibiste y contestare tu pregunta.\n\n")
     try:
         received = json.loads(c.recv(4096).decode().strip())
-        message_to_int = int.from_bytes(bytes.fromhex(received.get("message", "")), byteorder='big')
+        message_to_int = int.from_bytes(bytes.fromhex(received.get("message", "")), byteorder='little')
         signature = received.get("signature", "")
-        print("message to int is", message_to_int)
-        print("provided signature is", signature)
         computed = pow(signature, e, n)
-        print("computed signature is", computed)
         if message_to_int == computed:
             if received.get("message") == FORBIDDEN_QUESTION.encode().hex():
                 c.sendall(b"Felicidades!\n\n\nLa flag es" + flag.encode() + b"\n\n")
