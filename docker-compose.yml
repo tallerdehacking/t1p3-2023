@@ -1,0 +1,16 @@
+version: '3.7'
+services:
+  t1p3-server1:
+    build: ./
+    ports:
+      - 5326:5326
+    environment:
+      - PRIVATE_KEY=${PRIVATE_KEY}
+  t1p3-server2:
+    build: ./
+    ports:
+      - 5327:5327
+    command: "python server2.py"
+    environment:
+      - PUBLIC_KEY=${PUBLIC_KEY}
+      - FLAG=${FLAG}
