@@ -2,11 +2,12 @@ import os
 import socket
 import threading
 import random
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from .const import *
+import json
+from cryptography.hazmat.primitives import serialization
+from const import *
 
 flag = os.getenv("FLAG", "Q0M1MzJYLXRyeSBoYXJkZXItCg==")
-pk = serialization.load_pem_public_key(os.getenv("PUBLIC_KEY", ""),password=None)
+pk = serialization.load_pem_public_key(os.getenv("PUBLIC_KEY", ""))
 
 
 def handle(c):
@@ -21,7 +22,7 @@ def handle(c):
                 s.sendall(random.choice(PREDICTIONS).encode() + b"\n\n")
     except Exception as e:
         print(e) 
-        c.sendall(b"No entendi. Adiós!\n")
+        c.sendall(b"No entendi. Adios!\n")
         c.close()
 
 if __name__ == "__main__":
