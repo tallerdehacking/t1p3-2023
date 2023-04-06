@@ -8,30 +8,36 @@ from const import *
 
 
 
-sk = serialization.load_pem_private_key(os.getenv("PRIVATE_KEY", ""),password=None)
+sk = serialization.load_pem_private_key(os.getenv("PRIVATE_KEY", "").encode(),password=None)
+d = sk.private_numbers().d
+n = sk.private_numbers().public_numbers.n
 
+print("d is", d)
+print("n is", n)
 
 def handle(c):
     c.sendall(
         b"Preguntame lo que quieras en hexadecimal (menos \"" + \
-        FORBIDDEN_QUESTION + \
-        "\") y te lo contestare.\n\n"
+        FORBIDDEN_QUESTION.encode() + \
+        b"\") y te lo contestare.\n\n"
     )
     try:
         received = c.recv(1024).decode().strip()
-        if received.strip() == FORBIDDEN_QUESTION.hex():
-            s.sendall(random.choice(FORBIDDEN_ANSWERS).encode())
+        if received.strip() == FORBIDDEN_QUESTION.encode().hex():
+            c.sendall(random.choice(FORBIDDEN_ANSWERS).encode() + b"\n\n")
         else:
             message_to_int = int.from_bytes(bytes.fromhex(received), byteorder='big')
+            print("message to int is", message_to_int)
             answer = {
                 "message": received,
-                "signature": pow(message_to_int, sk.private_numbers.d, sk.private_numbers.public_numbers.n)
+                "signature": pow(message_to_int, d, n)
             }
-            s.sendall(json.dumps(answer))
-    except Exception as e:
-        print(e) 
-        c.sendall(b"No entendi. Adios!\n")
-        c.close()
+            c.sendall(json.dumps(answer).encode() + b"\n\n")
+    except Exception as exception:
+        print(exception) 
+        c.sendall(b"No entendi.\n")
+    c.sendall(b"Adios!\n\n")
+    c.close()
 
 if __name__ == "__main__":
     try:

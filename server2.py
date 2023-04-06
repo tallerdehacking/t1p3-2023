@@ -7,23 +7,35 @@ from cryptography.hazmat.primitives import serialization
 from const import *
 
 flag = os.getenv("FLAG", "Q0M1MzJYLXRyeSBoYXJkZXItCg==")
-pk = serialization.load_pem_public_key(os.getenv("PUBLIC_KEY", ""))
+pk = serialization.load_pem_public_key(os.getenv("PUBLIC_KEY", "").encode())
+e = pk.public_numbers().e
+n = pk.public_numbers().n
 
+print("e is", e)
+print("n is", n)
 
 def handle(c):
     c.sendall(b"Adjunta un mensaje de 5326 tal cual como lo recibiste y contestare tu pregunta.\n\n")
     try:
         received = json.loads(c.recv(4096).decode().strip())
         message_to_int = int.from_bytes(bytes.fromhex(received.get("message", "")), byteorder='big')
-        if received.get("signature", "") == pow(message_to_int, pk.public_numbers.e, pk.public_numbers.n):
-            if received.get("message") == FORBIDDEN_QUESTION.hex():
-                s.sendall(b"Felicidades!\n\n\nLa flag es" + flag.encode() + b"\n\n")
+        signature = received.get("signature", "")
+        print("message to int is", message_to_int)
+        print("provided signature is", signature)
+        computed = pow(signature, e, n)
+        print("computed signature is", computed)
+        if message_to_int == computed:
+            if received.get("message") == FORBIDDEN_QUESTION.encode().hex():
+                c.sendall(b"Felicidades!\n\n\nLa flag es" + flag.encode() + b"\n\n")
             else:
-                s.sendall(random.choice(PREDICTIONS).encode() + b"\n\n")
-    except Exception as e:
-        print(e) 
-        c.sendall(b"No entendi. Adios!\n")
-        c.close()
+                c.sendall(random.choice(PREDICTIONS).encode() + b"\n\n")
+        else:
+            c.sendall(b"Firma invalida!\n\n")
+    except Exception as exception: 
+        print(exception)
+        c.sendall(b"No entendi.\n")
+    c.sendall(b"Adios!\n\n")
+    c.close()
 
 if __name__ == "__main__":
     try:

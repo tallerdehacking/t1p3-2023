@@ -2,14 +2,20 @@ version: '3.7'
 services:
   t1p3-server1:
     build: ./
+    image: localhost/t1p3
     ports:
       - 5326:5326
+    volumes:
+      - ./:/app
     environment:
       - PRIVATE_KEY=${PRIVATE_KEY}
   t1p3-server2:
     build: ./
+    image: localhost/t1p3
     ports:
       - 5327:5327
+    volumes:
+      - ./:/app
     command: "python server2.py"
     environment:
       - PUBLIC_KEY=${PUBLIC_KEY}
