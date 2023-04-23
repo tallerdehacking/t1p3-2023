@@ -15,7 +15,7 @@ def handle(c):
     c.sendall(b"Adjunta un mensaje de 5326 tal cual como lo recibiste y contestare tu pregunta.\n\n")
     try:
         received = json.loads(c.recv(4096).decode().strip())
-        message_to_int = int.from_bytes(bytes.fromhex(received.get("message", "")), byteorder='little')
+        message_to_int = int.from_bytes(bytes.fromhex(received.get("message", "")), byteorder='big')
         signature = received.get("signature", "")
         computed = pow(signature, e, n)
         if message_to_int == computed:

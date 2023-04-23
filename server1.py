@@ -20,7 +20,7 @@ def handle(c):
     )
     try:
         received = c.recv(1024).decode().strip()
-        message_to_int = int.from_bytes(bytes.fromhex(received), byteorder='little')
+        message_to_int = int.from_bytes(bytes.fromhex(received), byteorder='big')
         print("message to int is", message_to_int)
         if received.strip() == FORBIDDEN_QUESTION.encode().hex():
             c.sendall(random.choice(FORBIDDEN_ANSWERS).encode() + b"\n\n")
